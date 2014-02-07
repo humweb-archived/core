@@ -1,4 +1,9 @@
-<?php
+<?php namespace Humweb\Core\Controllers;
+
+
+use Humweb\Module\Controllers;
+
+use View, Request, Modules;
 
 class AdminController extends BaseController {
 
@@ -14,9 +19,6 @@ class AdminController extends BaseController {
 		//Check for admin access
 		$this->beforeFilter('admin_auth', array('except' => array('getLogin', 'postLogin')));
 
-        //Theme location
-		View::addLocation(public_path().'/themes/'.$this->theme_slug);
-
 		//Set admin layout
         $this->layout = 'layouts.admin';
 
@@ -26,19 +28,17 @@ class AdminController extends BaseController {
 		$menu_array           = [];
 
 		//Create menu array for admin panel
-		foreach ($this->modules as $name)
+		foreach ($this->modules as $name => $module)
 		{
-			if ($module = Modules::instance($name))
+
+			if (is_callable([$module, 'admin_menu']))
 			{
-				if (is_callable([$module, 'admin_menu']))
-				{
-					$menu_array = array_merge_recursive($menu_array, $module->admin_menu());
-				}
+				$menu_array = array_merge_recursive($menu_array, $module->admin_menu());
 			}
 		}
 
 		$menu = [];
-		foreach (['Dashboard', 'Content', 'Structure', 'Settings', 'Users', 'DevOps'] as $key)
+		foreach (['Dashboard', 'Content', 'Structure', 'Settings', 'Users', 'DevOps', 'Testing'] as $key)
 		{
 			if (isset($menu_array[$key]))
 			{
@@ -46,7 +46,6 @@ class AdminController extends BaseController {
 			}
 			unset($menu_array[$key]);
 		}
-
 
 		View::share('module_menu_array', $menu);
 

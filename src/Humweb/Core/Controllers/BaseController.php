@@ -1,6 +1,7 @@
 <?php namespace Humweb\Core\Controllers;
 
 use Illuminate\Routing\Controller;
+use Sentry, View, Event;
 
 class BaseController extends Controller {
 
