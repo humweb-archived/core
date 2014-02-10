@@ -10,7 +10,7 @@ class AdminController extends BaseController {
 	protected $theme_slug = 'default';
 	protected $section = 'index';
 	protected $modules = [];
-	protected $current_module = 'dashboard';
+	protected $current_module = '';
 	
     public function __construct()
     {
@@ -23,7 +23,10 @@ class AdminController extends BaseController {
         $this->layout = 'layouts.admin';
 
         //Set some usefull variables to be used by extended controllers
-		$this->current_module = Request::segment(2)?:'dashboard';
+		if (empty($this->current_module))
+		{
+			$this->current_module = Request::segment(2)?:'';
+		}
 		$this->modules        = Modules::getProviders();
 		$menu_array           = [];
 

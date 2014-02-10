@@ -2,6 +2,7 @@
 
 use Illuminate\Routing\Controller;
 use Sentry, View, Event;
+use Humweb\Breadcrumbs\Breadcrumbs;
 
 class BaseController extends Controller {
 
@@ -9,9 +10,11 @@ class BaseController extends Controller {
 	protected $theme = 'default';
 	protected $layout = 'layouts.default';
 	public $_metadata = '';
+	protected $breadcrumbs;
 
 	public function __construct()
 	{
+		$this->breadcrumbs = new Breadcrumbs();
 		//Set language
 		//App::setLocale('en');
 
