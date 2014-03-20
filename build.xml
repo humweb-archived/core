@@ -19,6 +19,25 @@
   </parallel>
  </target>
 
+ <target name="composer" description="Installing dependencies">
+    <exec executable="wget" failonerror="true">
+      <arg value="-nc" />
+      <arg value="http://getcomposer.org/composer.phar" />
+    </exec>
+    <exec executable="php" failonerror="true">
+      <arg value="composer" />
+      <arg value="install" /><!--
+        # Use the lockfile versions only, if it exists (fall back to .json) -->
+      <arg value="--dev" /><!-- includes mockery and all the other QA-tools -->
+      <arg value="--prefer-dist" /><!--
+            ## download/cache a local .zip file for use -->
+      <arg value="--no-progress" />
+      <!--arg value="- -install-suggests" /-->
+      <!--arg value="- -optimize-autoloader" /
+            ## we don't usually optimise deployment -->
+    </exec>
+  </target>
+  
  <target name="clean" description="Cleanup build artifacts">
   <delete dir="${basedir}/build/api"/>
   <delete dir="${basedir}/build/coverage"/>
