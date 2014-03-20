@@ -10,7 +10,7 @@
   <delete dir="${basedir}/build/phpdox"/>
  </target>
 
- <target name="prepare" depends="clean,generate-code" description="Prepare for build">
+ <target name="prepare" depends="clean" description="Prepare for build">
   <mkdir dir="${basedir}/build/api"/>
   <mkdir dir="${basedir}/build/coverage"/>
   <mkdir dir="${basedir}/build/logs"/>
