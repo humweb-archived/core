@@ -1,13 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Humweb.Core" default="build">
- <target name="build" depends="prepare,lint,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpunit,phpdox"/>
+ <target name="build"
+   depends="prepare,lint,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpdox,phpunit"/>
+
+ <target name="build-parallel"
+   depends="prepare,lint,tools-parallel,phpunit"/>
+
+ <target name="tools-parallel" description="Run tools in parallel">
+  <parallel threadCount="2">
+   <sequential>
+    <antcall target="pdepend"/>
+    <antcall target="phpmd-ci"/>
+   </sequential>
+   <antcall target="phpcpd"/>
+   <antcall target="phpcs-ci"/>
+   <antcall target="phploc"/>
+   <antcall target="phpdox"/>
+  </parallel>
+ </target>
 
  <target name="clean" description="Cleanup build artifacts">
   <delete dir="${basedir}/build/api"/>
   <delete dir="${basedir}/build/coverage"/>
   <delete dir="${basedir}/build/logs"/>
   <delete dir="${basedir}/build/pdepend"/>
-  <delete dir="${basedir}/build/phpdox"/>
  </target>
 
  <target name="prepare" depends="clean" description="Prepare for build">
@@ -15,9 +31,10 @@
   <mkdir dir="${basedir}/build/coverage"/>
   <mkdir dir="${basedir}/build/logs"/>
   <mkdir dir="${basedir}/build/pdepend"/>
+  <mkdir dir="${basedir}/build/phpdox"/>
  </target>
 
- <target name="lint">
+ <target name="lint" description="Perform syntax check of sourcecode files">
   <apply executable="php" failonerror="true">
    <arg value="-l" />
 
@@ -34,19 +51,16 @@
  </target>
 
  <target name="phploc" description="Measure project size using PHPLOC">
-  <exec executable="${basedir}/build/tools/phploc">
+  <exec executable="phploc">
    <arg value="--count-tests" />
    <arg value="--log-csv" />
-   <arg path="${basedir}/build/logs/phploc.csv" />
-   <arg value="--log-xml" />
-   <arg path="${basedir}/build/logs/phploc.xml" />
+   <arg value="${basedir}/build/logs/phploc.csv" />
    <arg path="${basedir}/src" />
-   <arg path="${basedir}/tests" />
   </exec>
  </target>
 
  <target name="pdepend" description="Calculate software metrics using PHP_Depend">
-  <exec executable="${basedir}/build/tools/pdepend.phar">
+  <exec executable="pdepend">
    <arg value="--jdepend-xml=${basedir}/build/logs/jdepend.xml" />
    <arg value="--jdepend-chart=${basedir}/build/pdepend/dependencies.svg" />
    <arg value="--overview-pyramid=${basedir}/build/pdepend/overview-pyramid.svg" />
@@ -54,61 +68,55 @@
   </exec>
  </target>
 
- <target name="phpmd" description="Perform project mess detection using PHPMD and print result in text format">
-  <exec executable="${basedir}/build/tools/phpmd.phar">
+ <target name="phpmd"
+         description="Perform project mess detection using PHPMD and print human readable output. Intended for usage on the command line before committing.">
+  <exec executable="phpmd">
    <arg path="${basedir}/src" />
    <arg value="text" />
-   <arg path="${basedir}/build/phpmd.xml" />
+   <arg value="${basedir}/build/phpmd.xml" />
   </exec>
  </target>
 
- <target name="phpmd-ci" description="Perform project mess detection using PHPMD and log result in XML format">
-  <exec executable="${basedir}/build/tools/phpmd.phar">
+ <target name="phpmd-ci" description="Perform project mess detection using PHPMD creating a log file for the continuous integration server">
+  <exec executable="phpmd">
    <arg path="${basedir}/src" />
    <arg value="xml" />
-   <arg path="${basedir}/build/phpmd.xml" />
+   <arg value="${basedir}/build/phpmd.xml" />
    <arg value="--reportfile" />
-   <arg path="${basedir}/build/logs/pmd.xml" />
+   <arg value="${basedir}/build/logs/pmd.xml" />
   </exec>
  </target>
 
- <target name="phpcs" description="Find coding standard violations using PHP_CodeSniffer and print result in text format">
-  <exec executable="${basedir}/build/tools/phpcs.phar">
-   <arg value="--standard=PSR2" />
-   <arg value="--extensions=php" />
-   <arg value="--ignore=autoload.php" />
+ <target name="phpcs"
+         description="Find coding standard violations using PHP_CodeSniffer and print human readable output. Intended for usage on the command line before committing.">
+  <exec executable="phpcs">
+   <arg value="--standard=${basedir}/build/phpcs.xml" />
    <arg path="${basedir}/src" />
-   <arg path="${basedir}/tests" />
   </exec>
  </target>
 
- <target name="phpcs-ci" description="Find coding standard violations using PHP_CodeSniffer and log result in XML format">
-  <exec executable="${basedir}/build/tools/phpcs.phar" output="/dev/null">
+ <target name="phpcs-ci" description="Find coding standard violations using PHP_CodeSniffer creating a log file for the continuous integration server">
+  <exec executable="phpcs" output="/dev/null">
    <arg value="--report=checkstyle" />
    <arg value="--report-file=${basedir}/build/logs/checkstyle.xml" />
-   <arg value="--standard=PSR2" />
-   <arg value="--extensions=php" />
-   <arg value="--ignore=autoload.php" />
+   <arg value="--standard=${basedir}/build/phpcs.xml" />
    <arg path="${basedir}/src" />
   </exec>
  </target>
 
  <target name="phpcpd" description="Find duplicate code using PHPCPD">
-  <exec executable="${basedir}/build/tools/phpcpd.phar">
+  <exec executable="phpcpd">
    <arg value="--log-pmd" />
-   <arg path="${basedir}/build/logs/pmd-cpd.xml" />
+   <arg value="${basedir}/build/logs/pmd-cpd.xml" />
    <arg path="${basedir}/src" />
   </exec>
  </target>
 
- <target name="phpunit" description="Run unit tests with PHPUnit">
-  <exec executable="${basedir}/build/tools/phpunit.phar" failonerror="true">
-   <arg value="--configuration"/>
-   <arg path="${basedir}/build/phpunit.xml"/>
-  </exec>
+ <target name="phpdox" description="Generate API documentation using phpDox">
+  <exec executable="phpdox"/>
  </target>
 
- <target name="phpdox" description="Generate API documentation using phpDox">
-  <exec executable="${basedir}/build/tools/phpdox.phar" dir="${basedir}/build"/>
+ <target name="phpunit" description="Run unit tests with PHPUnit">
+  <exec executable="phpunit" failonerror="true"/>
  </target>
 </project>
