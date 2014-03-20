@@ -25,7 +25,7 @@
       <arg value="http://getcomposer.org/composer.phar" />
     </exec>
     <exec executable="php" failonerror="true">
-      <arg value="composer" />
+      <arg value="composer.phar" />
       <arg value="install" /><!--
         # Use the lockfile versions only, if it exists (fall back to .json) -->
       <arg value="--dev" /><!-- includes mockery and all the other QA-tools -->
